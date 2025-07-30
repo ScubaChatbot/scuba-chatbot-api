@@ -23,6 +23,15 @@ This project uses SQLite as the database engine for user registration and authen
 
 User data (username and hashed password) is stored in the database and used for authentication and JWT token generation. No tokens are stored; JWTs are stateless and validated on each request.
 
+
+## Environment Variables
+
+Before running the project, copy `.env.example` to `.env` and fill in your own API keys:
+```bash
+cp .env.example .env
+# Edit .env and add your real keys
+```
+
 ## Local Installation & Usage
 
 1. **Clone the repository:**

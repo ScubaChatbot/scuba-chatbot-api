@@ -71,5 +71,8 @@ migrations/
 # VS Code
 .vscode/
 
+# Environment variables
+.env
+
 # MacOS
 .DS_Store
