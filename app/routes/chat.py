@@ -21,6 +21,13 @@ def chat(current_user):
         ]
     }
 
-    response = generate_rag_answer(input)["messages"][-1].content
+    result = generate_rag_answer(input)
+    response_message = result["messages"][-1]
+    
+    # Handle both dict and object responses
+    if isinstance(response_message, dict):
+        response_content = response_message.get("content", "Error processing request")
+    else:
+        response_content = response_message.content
 
-    return response
+    return jsonify({"response": response_content})
