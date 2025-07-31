@@ -7,8 +7,8 @@ def create_app():
     from app.extensions import db
     db.init_app(app)
 
-    from app.routes.chat import chat_bp
-    app.register_blueprint(chat_bp)
+    from app.routes.chat import create_chat_bp
+    app.register_blueprint(create_chat_bp())
 
     from app.routes.auth import auth_bp
     app.register_blueprint(auth_bp)

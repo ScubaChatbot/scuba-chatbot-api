@@ -1,4 +1,3 @@
-
 # ScubaTours Chatbot API
 
 This project is a Retrieval-Augmented Generation (RAG) API built with Python (Flask) to assist ScubaTours customers in planning diving experiences, courses, and managing bookings in Colombia. The chatbot leverages OpenAI for natural language understanding and is provided with a specialized knowledge base about diving tours, courses, and services in Colombia (Providencia, San Andrés, etc).
@@ -16,13 +15,11 @@ This project is a Retrieval-Augmented Generation (RAG) API built with Python (Fl
 - `POST /users/register`: Register new users.
 - `POST /users/login`: User authentication.
 
-
 ## Database
 
 This project uses SQLite as the database engine for user registration and authentication. The database file (`scuba_chatbot.db`) is automatically created in the project root when the API is first run. SQLite is lightweight and ideal for development and prototyping. You can easily migrate to a more robust database (e.g., PostgreSQL, MySQL) for production if needed.
 
 User data (username and hashed password) is stored in the database and used for authentication and JWT token generation. No tokens are stored; JWTs are stateless and validated on each request.
-
 
 ## Environment Variables
 
@@ -62,6 +59,16 @@ cp .env.example .env
      ```bash
      curl -X POST http://localhost:5000/chat -H "Content-Type: application/json" -d '{"message": "What diving tours are available in Providencia?"}'
      ```
+
+## Running Tests
+
+To run the test suite, use the following command from the project root:
+
+```bash
+PYTHONPATH=. pytest tests/
+```
+
+This ensures that the tests are executed with the correct module resolution.
 
 ## User Stories
 The main user stories covered by the API include:
