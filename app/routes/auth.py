@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 import jwt
-import datetime
+from datetime import datetime, timedelta, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db
 from app.models.user import User
@@ -35,24 +35,31 @@ def login():
     from flask import current_app
     token = jwt.encode({
         'user_id': user.id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        'exp': datetime.now(timezone.utc) + timedelta(hours=2)
     }, current_app.config['SECRET_KEY'], algorithm='HS256')
     return jsonify({'token': token}), 200
 
 def token_required(f):
     from functools import wraps
+    from flask import current_app
+
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None
-        if 'Authorization' in request.headers:
-            token = request.headers['Authorization'].split("Bearer ")[-1]
-        if not token:
-            return jsonify({'error': 'Token is missing!'}), 401
-        from flask import current_app
+        auth_header = request.headers.get('Authorization', '')
+        parts = auth_header.split()
+
+        if len(parts) != 2 or parts[0] != 'Bearer':
+            return jsonify({'error': 'Token is missing or invalid format'}), 401
+
+        token = parts[1]
+
         try:
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
             current_user = User.query.get(data['user_id'])
-        except Exception:
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except jwt.InvalidTokenError:
             return jsonify({'error': 'Token is invalid!'}), 401
+
         return f(current_user, *args, **kwargs)
     return decorated

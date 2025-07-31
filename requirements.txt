@@ -18,3 +18,5 @@ langchain[openai]
 langchain-community
 PyJWT
 flask_sqlalchemy
+pytest
+pytest-mock
