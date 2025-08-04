@@ -1,0 +1,10 @@
+README.md
+.env
+.gitignore
+.github/
+tests/
+*.pyc
+__pycache__/
+.vscode/
+*.log
+.DS_Store
