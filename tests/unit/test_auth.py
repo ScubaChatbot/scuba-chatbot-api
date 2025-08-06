@@ -7,6 +7,9 @@ from unittest.mock import patch, MagicMock
 
 @pytest.fixture
 def app():
+    """
+    Flask app fixture for unit tests. Uses test config and registers only the auth blueprint.
+    """
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'test_secret'
     app.register_blueprint(auth_bp)
@@ -15,9 +18,15 @@ def app():
 
 @pytest.fixture
 def client(app):
+    """
+    Returns a Flask test client for unit tests.
+    """
     return app.test_client()
 
 def test_register_success(client):
+    """
+    Test successful user registration. Mocks DB session and user query.
+    """
     with client.application.app_context():
         with patch('app.models.user.User.query') as mock_query, \
              patch('app.extensions.db.session') as mock_session:
@@ -29,11 +38,17 @@ def test_register_success(client):
             assert mock_session.commit.called
 
 def test_register_missing_fields(client):
+    """
+    Test registration with missing fields. Should return 400 error.
+    """
     response = client.post('/users/register', json={'username': 'test'})
     assert response.status_code == 400
     assert 'error' in response.get_json()
 
 def test_register_user_exists(client):
+    """
+    Test registration with existing user. Should return 409 error. Mocks user query.
+    """
     with client.application.app_context():
         with patch('app.models.user.User.query') as mock_query:
             mock_query.filter_by.return_value.first.return_value = User(username='test', password='pw')
@@ -42,6 +57,9 @@ def test_register_user_exists(client):
             assert 'error' in response.get_json()
 
 def test_login_success(client):
+    """
+    Test successful login. Mocks user query and JWT encode.
+    """
     with client.application.app_context():
         hashed_pw = generate_password_hash('pw')
         user = User(id=1, username='test', password=hashed_pw)
@@ -53,6 +71,9 @@ def test_login_success(client):
             assert 'token' in response.get_json()
 
 def test_login_invalid_credentials(client):
+    """
+    Test login with invalid credentials. Should return 401 error. Mocks user query.
+    """
     with client.application.app_context():
         with patch('app.models.user.User.query') as mock_query:
             mock_query.filter_by.return_value.first.return_value = None
