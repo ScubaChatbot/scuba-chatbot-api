@@ -5,4 +5,4 @@ db = SQLAlchemy()
 from flask_cors import CORS
 
 def init_cors(app):
-    CORS(app, origins=["http://localhost:3001"], supports_credentials=True)
+    CORS(app, origins=["http://localhost:3001", "https://scuba-chatbot-app.azurewebsites.net"], supports_credentials=True)
