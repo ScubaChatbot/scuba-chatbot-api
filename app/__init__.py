@@ -1,13 +1,17 @@
 from flask import Flask
 
 def create_app():
+    from prometheus_flask_exporter import PrometheusMetrics
+
     app = Flask(__name__)
     app.config.from_pyfile('../config.py')
-
 
     from app.extensions import db, init_cors
     db.init_app(app)
     init_cors(app)
+
+    # Add Prometheus metrics
+    metrics = PrometheusMetrics(app)
 
     from app.routes.chat import create_chat_bp
     app.register_blueprint(create_chat_bp())

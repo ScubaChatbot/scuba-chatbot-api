@@ -21,3 +21,4 @@ flask_sqlalchemy
 pytest
 pytest-mock
 flask_cors
+prometheus_flask_exporter
