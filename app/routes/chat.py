@@ -1,18 +1,22 @@
 import os
 import openai
+import logging
 from flask import Blueprint, request, jsonify
 from app.services.chat import generate_rag_answer
+
+logger = logging.getLogger(__name__)
 
 def handle_chat_request(current_user):
     data = request.get_json()
     message = data.get("message", "")
+    logger.info(f"Received chat request from user '{current_user}': {message}")
 
     input = {
         "messages": [
             {
                 "role": "user",
                 "content": message
-            }        
+            }
         ]
     }
 
@@ -25,6 +29,7 @@ def handle_chat_request(current_user):
     else:
         response_content = response_message.content
 
+    logger.info(f"Sending chat response to user '{current_user}': {response_content}")
     return jsonify({"response": response_content})
 
 def create_chat_bp():
