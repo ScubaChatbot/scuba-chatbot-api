@@ -11,7 +11,7 @@ def app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['TESTING'] = True
     db.init_app(app)
-    # Registrar ambos blueprints para que existan los endpoints de auth y chat
+    # Register both blueprints so that the auth and chat endpoints exist
     from app.routes.auth import auth_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(create_chat_bp())
@@ -27,15 +27,16 @@ def client(app):
 
 
 def test_chat_protected_and_mocked(client):
-    # Verifica que /chat requiere auth
+    # Verify that /chat requires authentication
     resp = client.post('/chat', json={'message': 'Hola'})
     assert resp.status_code == 401
     assert 'error' in resp.get_json()
 
-    # Mockea generate_rag_answer en el namespace correcto y prueba respuesta básica con token dummy
+    # Mock generate_rag_answer in the correct namespace and test basic response with dummy token
     with patch('app.routes.chat.generate_rag_answer') as mock_rag:
         mock_rag.return_value = {"messages": [{"role": "assistant", "content": "Mocked!"}]}
         # Forzamos bypass del decorador usando test_request_context y manualmente
+        # Force bypass of the decorator using test_request_context and manual call
         app = client.application
         with app.test_request_context('/chat', method='POST', json={'message': 'Hola'}):
             from app.routes.chat import handle_chat_request
