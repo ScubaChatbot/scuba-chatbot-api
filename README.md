@@ -78,3 +78,48 @@ The main user stories covered by the API include:
 - Booking status verification.
 
 For more details, see the `user-stories.md` file.
+
+## Observability
+
+### Health Check
+
+- **Endpoint:** `GET /health`
+- **Description:** Returns `{"status": "ok"}` if the service is up and running. Useful for monitoring and orchestration systems (Kubernetes, Docker, etc).
+
+### Metrics
+
+- **Endpoint:** `GET /metrics`
+- **Description:** Exposes Prometheus-compatible metrics using `prometheus_flask_exporter`. These metrics can be scraped by Prometheus and visualized in Grafana or similar tools.
+- **Tracked Metrics:**
+  - **Chat Endpoints:**
+    - `chat_requests_total`: Total number of chat requests received.
+    - `chat_failed_requests_total`: Total number of failed chat requests.
+    - `chat_response_latency_seconds`: Histogram of chat response latency (in seconds).
+  - **Authentication & Registration:**
+    - `login_attempts_total`: Total number of login attempts.
+    - `login_failed_total`: Total number of failed login attempts.
+    - `login_success_total`: Total number of successful logins.
+    - `registration_attempts_total`: Total number of registration attempts.
+    - `registration_failed_total`: Total number of failed registration attempts.
+    - `registration_success_total`: Total number of successful registrations.
+
+### Logging
+
+- **Library:** Uses Python's built-in `logging` module.
+- **Log Events:**
+  - **Chat Service:**
+    - Initialization steps and errors for the chat service and RAG components.
+    - User queries received and responses sent.
+    - Errors during chat processing.
+  - **Authentication & Registration:**
+    - Registration and login attempts (including username).
+    - Success and failure events for registration and login.
+    - Warnings for missing/invalid credentials, duplicate users, and token issues.
+  - **General:**
+    - All logs include timestamps, log level, and module name for traceability.
+- **Log Format Example:**
+  ```
+  2025-07-08 18:00:00,000 INFO app.services.chat: Initializing chat model...
+  2025-07-08 18:00:01,000 INFO app.routes.chat: Received chat request from user 'alice': What tours are available?
+  2025-07-08 18:00:01,500 ERROR app.services.chat: Failed to initialize chat service: <error details>
+  ```
