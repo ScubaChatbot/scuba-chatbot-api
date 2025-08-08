@@ -69,36 +69,43 @@ def initialize_chat_service():
         logger.error(f"Failed to initialize chat service: {e}")
         logger.error("Chat functionality will be unavailable.")
 
-def generate_rag_answer(state: MessagesState):
-    """Generate RAG answer with initialization check"""
+def generate_rag_answer(state: MessagesState, retriever=None, llm=None):
+    """
+    Generate a RAG answer. Allows dependency injection for retriever and llm for testability.
+    If not provided, uses the global retriever_tool and response_model.
+    """
     global response_model, retriever_tool, is_initialized
-    
-    # Initialize if not already done
-    if not is_initialized:
-        logger.info("Chat service not initialized. Initializing now...")
-        initialize_chat_service()
 
-    # Check if initialization was successful
-    if not is_initialized or response_model is None or retriever_tool is None:
-        logger.error("Chat service unavailable: retriever or response model not initialized.")
-        return {"messages": [{"role": "assistant", "content": "Sorry, the chat service is currently unavailable."}]}
+    # Use injected dependencies or fall back to globals
+    if retriever is None or llm is None:
+        # Initialize if not already done
+        if not is_initialized:
+            logger.info("Chat service not initialized. Initializing now...")
+            initialize_chat_service()
+        # Check if initialization was successful
+        if not is_initialized or response_model is None or retriever_tool is None:
+            logger.error("Chat service unavailable: retriever or response model not initialized.")
+            return {"messages": [{"role": "assistant", "content": "Lo siento, el servicio de chat no está disponible en este momento."}]}
+        retriever = retriever_tool
+        llm = response_model
 
     try:
         query = state["messages"][-1]["content"]
         logger.info(f"Received user query: {query}")
-        docs = retriever_tool.invoke({"query": query})
+        docs = retriever.invoke({"query": query})
         logger.info("Retrieved context from knowledge base.")
+
         full_prompt = (
             "Rol:Eres un asistente de buceo en Colombia, educado y enfocado en el cliente. "
             "Siempre debes responder de manera amable y servicial.\n\n"
             f"Contexto:\n{docs}\n\n"
             f"Pregunta del usuario: {query}"
         )
+
         logger.info("Sending prompt to LLM.")
-        response = response_model.invoke(full_prompt)
+        response = llm.invoke(full_prompt)
         logger.info("LLM response generated successfully.")
         return {"messages": [response]}
-
     except Exception as e:
         logger.error(f"Error generating response: {e}")
         return {"messages": [{"role": "assistant", "content": "Sorry, an error occurred while processing your request."}]}
