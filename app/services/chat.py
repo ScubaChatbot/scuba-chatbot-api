@@ -63,30 +63,33 @@ def initialize_chat_service():
         print(f"Failed to initialize chat service: {e}")
         print("Chat functionality will be unavailable")
 
-def generate_rag_answer(state: MessagesState):
-    """Generate RAG answer with initialization check"""
+def generate_rag_answer(state: MessagesState, retriever=None, llm=None):
+    """
+    Generate a RAG answer. Allows dependency injection for retriever and llm for testability.
+    If not provided, uses the global retriever_tool and response_model.
+    """
     global response_model, retriever_tool, is_initialized
-    
-    # Initialize if not already done
-    if not is_initialized:
-        initialize_chat_service()
-    
-    # Check if initialization was successful
-    if not is_initialized or response_model is None or retriever_tool is None:
-        return {"messages": [{"role": "assistant", "content": "Lo siento, el servicio de chat no está disponible en este momento."}]}
-    
+
+    # Use injected dependencies or fall back to globals
+    if retriever is None or llm is None:
+        if not is_initialized:
+            initialize_chat_service()
+        if not is_initialized or response_model is None or retriever_tool is None:
+            return {"messages": [{"role": "assistant", "content": "Lo siento, el servicio de chat no está disponible en este momento."}]}
+        retriever = retriever_tool
+        llm = response_model
+
     try:
         query = state["messages"][-1]["content"]
-        docs = retriever_tool.invoke({"query": query})
+        docs = retriever.invoke({"query": query})
         full_prompt = (
             "Rol:Eres un asistente de buceo en Colombia, educado y enfocado en el cliente. "
             "Siempre debes responder de manera amable y servicial.\n\n"
             f"Contexto:\n{docs}\n\n"
             f"Pregunta del usuario: {query}"
         )
-        response = response_model.invoke(full_prompt)
+        response = llm.invoke(full_prompt)
         return {"messages": [response]}
-        
     except Exception as e:
         print(f"Error generating response: {e}")
         return {"messages": [{"role": "assistant", "content": "Lo siento, ocurrió un error al procesar tu consulta."}]}
